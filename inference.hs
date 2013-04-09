@@ -44,12 +44,14 @@ rpr a b = S.filter predicate $ a `S.union` b
 prove :: (Ord a) => Set (Clause a) -> Clause a -> Maybe (Clause a, [(Clause a, Clause a)])
 prove kb a = maybe Nothing (\x -> Just (start, x)) result
   where result = aStar expand distance heuristic goalTest start
-        expand x = S.map (\y -> (y, rpr x y)) (kb `S.union` (S.delete start negation))
+        expand x = S.map (\y -> (y, rpr x y)) kb'
         distance _ _ _ = 1
         heuristic = S.size
         goalTest = S.null
         start = S.toList negation !! 0
+
         negation = negateClause a
+        kb' = kb `S.union` negation
 
 readKB :: String -> Set (Clause String)
 readKB input = either (\pe -> error ("Error parsing knowledge base:\n" ++ show pe)) id (parse ifrules "" input)
