@@ -77,4 +77,4 @@ main = do
       let kb = readKB contents
           a = readClause (args !! 1)
           result = prove kb a
-      putStrLn $ maybe ("KB ⊭ " ++ showClause a) showSolution $ result
+      putStrLn $ maybe ("KB ⊬ " ++ showClause a) showSolution $ result
