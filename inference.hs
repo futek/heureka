@@ -36,15 +36,17 @@ complement (Positive a) = Negative a
 negateClause :: (Ord a) => Clause a -> Set (Clause a)
 negateClause = S.map (S.singleton . complement)
 
-rpr :: (Ord a) => Clause a -> Clause a -> Clause a
-rpr a b = S.filter predicate $ a `S.union` b
-  where predicate l = not $ (symbol l) `S.member` complements
-        complements = S.map symbol $ a `S.intersection` (S.map complement b)
+rpr :: (Ord a) => Clause a -> Clause a -> Set (Clause a)
+rpr a b = S.foldr (\x a -> maybe a (\c -> S.insert c a) x) S.empty $ S.map removePair union
+  where union = (a `S.union` b)
+        removePair l
+          | (complement l) `S.member` union = Just $ S.delete (complement l) . S.delete l $ union
+          | otherwise = Nothing
 
-prove :: (Ord a) => Set (Clause a) -> Clause a -> Maybe (Clause a, [(Clause a, Clause a)])
+prove :: (Ord a, Show a) => Set (Clause a) -> Clause a -> Maybe (Clause a, [(Clause a, Clause a)])
 prove kb a = maybe Nothing (\x -> Just (start, x)) result
   where result = aStar expand distance heuristic goalTest start
-        expand x = S.map (\y -> (y, rpr x y)) kb'
+        expand x = S.foldr S.union S.empty $ S.map (\y -> S.map (\c -> (y, c)) $ rpr x y) kb'
         distance _ _ _ = 1
         heuristic = S.size
         goalTest = S.null
