@@ -1,3 +1,11 @@
+module Inference (
+  Literal(Negative,Positive),
+  Clause,
+  prove,
+  showSolution,
+  showClause
+) where
+
 import System.IO
 import System.Environment
 
