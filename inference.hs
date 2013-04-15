@@ -6,7 +6,7 @@ import Data.Set (Set)
 import Data.List (intercalate)
 
 import Control.Applicative ((<$>), (<*>))
-import Text.Parsec
+import Text.ParserCombinators.Parsec
 
 import AStar
 
@@ -48,13 +48,15 @@ prove kb a = maybe Nothing (\x -> Just (start, x)) result
         kb' = kb `S.union` negation
 
 readKB :: String -> Set (Clause String)
-readKB = S.fromList . map readClause . filter nonEmpty . lines
-  where nonEmpty line = length line /= 0
+readKB input = either (\pe -> error ("Error parsing knowledge base:\n" ++ show pe)) id (parse kb "" input)
+  where kb = S.fromList <$> endBy clauseParser (char '\n')
 
 readClause :: String -> Clause String
-readClause input = either (\pe -> error ("Error parsing clause:\n" ++ show pe)) id (parse clause "" input)
-  where clause = S.fromList <$> (try ifrule <|> disjunction)
-        ifrule = (\x xs -> x : map complement xs) <$> literal <*> (string " IF " >> conjunction)
+readClause input = either (\pe -> error ("Error parsing clause:\n" ++ show pe)) id (parse clauseParser "" input)
+
+clauseParser :: GenParser Char st (Clause String)
+clauseParser = S.fromList <$> (try ifrule <|> disjunction)
+  where ifrule = (\x xs -> x : map complement xs) <$> literal <*> (string " IF " >> conjunction)
         conjunction = sepBy1 literal (string " AND ")
         disjunction = sepBy1 literal (string " OR ")
         literal = negative <|> positive
