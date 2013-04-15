@@ -48,19 +48,18 @@ prove kb a = maybe Nothing (\x -> Just (start, x)) result
         kb' = kb `S.union` negation
 
 readKB :: String -> Set (Clause String)
-readKB input = either (\pe -> error ("Error parsing knowledge base:\n" ++ show pe)) id (parse ifrules "" input)
-  where ifrules = S.fromList <$> endBy line (char '\n')
-        line = makeClause <$> literal <*> (option [] (string " IF " >> condition))
-          where makeClause x xs = S.fromList $ Positive x : map Negative xs
-        condition = sepBy1 literal (string " AND ")
-        literal = many1 (noneOf " \n")
+readKB = S.fromList . map readClause . filter nonEmpty . lines
+  where nonEmpty line = length line /= 0
 
 readClause :: String -> Clause String
 readClause input = either (\pe -> error ("Error parsing clause:\n" ++ show pe)) id (parse clause "" input)
-  where clause = S.fromList <$> sepBy1 literal (string " OR ")
+  where clause = S.fromList <$> (try ifrule <|> disjunction)
+        ifrule = (\x xs -> x : map complement xs) <$> literal <*> (string " IF " >> conjunction)
+        conjunction = sepBy1 literal (string " AND ")
+        disjunction = sepBy1 literal (string " OR ")
         literal = negative <|> positive
-        negative = Negative <$> (string "NOT " >> many1 (noneOf " \n"))
-        positive = Positive <$> (many1 (noneOf " \n"))
+        negative = complement <$> (string "NOT " >> positive)
+        positive = Positive <$> many1 (noneOf "\n ")
 
 showSolution :: (Show a) => (Clause a, [(Clause a, Clause a)]) -> String
 showSolution (start, path) = showClause start ++ output
