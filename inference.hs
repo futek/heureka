@@ -49,7 +49,7 @@ prove kb a = maybe Nothing (\x -> Just (start, x)) result
 
 readKB :: String -> Set (Clause String)
 readKB input = either (\pe -> error ("Error parsing knowledge base:\n" ++ show pe)) id (parse kb "" input)
-  where kb = S.fromList <$> endBy clauseParser (char '\n')
+  where kb = S.fromList <$> endBy (spaces >> clauseParser) (char '\n')
 
 readClause :: String -> Clause String
 readClause input = either (\pe -> error ("Error parsing clause:\n" ++ show pe)) id (parse clauseParser "" input)
