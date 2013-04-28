@@ -26,9 +26,9 @@ negateClause = S.map (S.singleton . complement)
 
 rpr :: (Ord a) => Clause a -> Clause a -> Set (Clause a)
 rpr a b = S.map (\(Just c) -> c) $ S.delete Nothing $ S.map removePair union
-  where union = (a `S.union` b)
+  where union = a `S.union` b
         removePair l
-          | (complement l) `S.member` union = Just $ S.delete (complement l) . S.delete l $ union
+          | (complement l) `S.member` union = Just $ S.delete (complement l) $ S.delete l $ union
           | otherwise                       = Nothing
 
 prove :: (Ord a, Show a) => Set (Clause a) -> Clause a -> Maybe (Clause a, [(Clause a, Clause a)])
