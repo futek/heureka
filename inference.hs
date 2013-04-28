@@ -17,10 +17,6 @@ instance (Show a) => Show (Literal a) where
   show (Negative a) = '¬' : show a
   show (Positive a) = show a
 
-symbol :: Literal a -> a
-symbol (Negative a) = a
-symbol (Positive a) = a
-
 complement :: Literal a -> Literal a
 complement (Negative a) = Positive a
 complement (Positive a) = Negative a
