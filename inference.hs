@@ -64,8 +64,8 @@ showSolution (start, path) = showClause start ++ output
 showClause :: (Show a) => Clause a -> String
 showClause clause
   | S.null clause = "☐"
-  | otherwise = (filter notQuote . intercalate " ∨ " . map show . S.toList) clause
-  where notQuote c = c /= '\'' && c /= '"'
+  | otherwise     = (filter notQuote . intercalate " ∨ " . map show . S.toList) clause
+  where notQuote c = not $ c `elem` "\"'"
 
 main = do
   args <- getArgs
