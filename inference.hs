@@ -2,7 +2,7 @@ import System.IO
 import System.Environment
 import qualified Data.Set as S
 import Data.Set (Set)
-import Data.List (intercalate)
+import Data.List (find, intercalate)
 import Control.Applicative ((<$>), (<*>))
 import Text.ParserCombinators.Parsec
 import AStar
@@ -29,13 +29,14 @@ rpr a b = S.map (\(Just c) -> c) $ S.delete Nothing $ S.map removePair union
           | otherwise                       = Nothing
 
 prove :: (Ord a, Show a) => Set (Clause a) -> Clause a -> Maybe (Clause a, [(Clause a, Clause a)])
-prove kb a = maybe Nothing (\x -> Just (start, x)) result
-  where result = aStar expand distance heuristic goalTest start
+prove kb a = maybe Nothing (\(start, Just x) -> Just (start, x)) result
+  where result = find (\(_, search) -> maybe False (\_ -> True) search) searches
+        searches = map (\start -> (start, aStar expand distance heuristic goalTest start)) (S.toList negation)
+
         expand x = S.foldr S.union S.empty $ S.map (\y -> S.map (\c -> (y, c)) $ rpr x y) kb'
         distance _ _ _ = 1
         heuristic = S.size
         goalTest = S.null
-        start = S.toList negation !! 0
 
         negation = negateClause a
         kb' = kb `S.union` negation
