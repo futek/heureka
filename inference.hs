@@ -1,13 +1,10 @@
 import System.IO
 import System.Environment
-
 import qualified Data.Set as S
 import Data.Set (Set)
 import Data.List (intercalate)
-
 import Control.Applicative ((<$>), (<*>))
 import Text.ParserCombinators.Parsec
-
 import AStar
 
 data Literal a = Negative a | Positive a deriving (Eq, Ord)
